@@ -1,0 +1,35 @@
+// components/Header.tsx
+"use client";
+import React, { useState } from "react";
+import { Menu } from "lucide-react";
+
+export default function Header() {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+
+  return (
+    <header className="bg-white shadow-md px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+      {/* Left side: Hamburger icon */}
+      <div className="relative">
+        <button onClick={toggleDropdown} className="text-gray-700">
+          <Menu size={24} />
+        </button>
+
+        {/* Dropdown menu */}
+        {isDropdownOpen && (
+          <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+            <ul className="py-2">
+              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Quản lý</li>
+              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Thống kê - báo cáo</li>
+              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Cài đặt</li>
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Right side (optional: title/logo...) */}
+      <h1 className="text-lg font-semibold text-gray-800">Trang Nhà Bếp</h1>
+    </header>
+  );
+}
