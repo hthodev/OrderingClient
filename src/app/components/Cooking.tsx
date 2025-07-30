@@ -164,7 +164,9 @@ export default function KitchenDashboard() {
     };
 
     socket.on("NEW_ORDER", handleNewOrder);
-    return () => socket.off("NEW_ORDER", handleNewOrder);
+    return () => {
+      socket.off("NEW_ORDER", handleNewOrder);
+    };
   }, [canPlayAudio]);
 
   useEffect(() => {
