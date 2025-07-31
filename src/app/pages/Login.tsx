@@ -23,9 +23,9 @@ export default function LoginPage() {
     if (authStr) {
       const auth = JSON.parse(authStr);
       if (auth?.token && auth?.refresh) {
-        const user = userDecode(auth.token);
-        user.position !== USER.POSITION.COOKING
-          ? router.push("/")
+        const user = userDecode();
+        user?.position !== USER.POSITION.COOKING
+          ? router.push("/table")
           : router.push("/cooking");
       }
     }

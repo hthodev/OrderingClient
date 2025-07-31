@@ -8,7 +8,7 @@ export default function CookingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Header title="Trang Nhà Bếp"/>
       <main className="flex-1">
         <KitchenDashboard />
       </main>

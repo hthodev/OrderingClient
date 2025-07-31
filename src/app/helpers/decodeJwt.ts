@@ -18,5 +18,11 @@ export function userDecode() {
     const user: User = jwtDecode(token);
     return user;
   }
-  return null;
+  return {
+    _id: "",
+    username: "",
+    fullName: "",
+    image: "",
+    position: "",
+  };
 }
