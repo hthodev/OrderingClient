@@ -24,9 +24,24 @@ export default function LoginPage() {
       const auth = JSON.parse(authStr);
       if (auth?.token && auth?.refresh) {
         const user = userDecode();
-        user?.position !== USER.POSITION.COOKING
-          ? router.push("/table")
-          : router.push("/cooking");
+        if (!user) {
+          router.push("/login");
+        }
+
+        switch (user?.position) {
+          case USER.POSITION.COOKING:
+            router.push("/cooking");
+            break;
+          case USER.POSITION.MANAGER:
+            router.push("/");
+            break;
+          case USER.POSITION.OWNER:
+            router.push("/");
+            break;
+          default:
+            router.push("/table");
+            break;
+        }
       }
     }
   }, [LocalStorage.JwtToken.get()]);

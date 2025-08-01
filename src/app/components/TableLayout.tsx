@@ -250,7 +250,7 @@ export default function TableLayout() {
   return (
     <div className="min-h-screen bg-white p-4 flex flex-col items-center">
       <Toaster position="top-right" />
-      <div className="w-full flex justify-end mb-6">
+      <div className="w-full flex justify-center mb-6">
         <div className="flex items-center space-x-2">
           <Image src="r_table.svg" alt="Cashier" width={40} height={40} />
           <span className="text-xl font-bold">Bàn thu ngân</span>

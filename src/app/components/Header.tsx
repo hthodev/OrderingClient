@@ -5,13 +5,20 @@ import { Menu } from "lucide-react";
 import { userDecode } from "../helpers/decodeJwt";
 import Image from "next/image";
 import USER from "../constants/users";
+import { useRouter } from "next/navigation";
+import LocalStorage from "../helpers/localstorage";
 
 const user = userDecode();
 
 export default function Header({ title }: { title: string }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter();
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+  const handleLogout = () => {
+    LocalStorage.User.remove();
+    router.push('/login')
+  }
 
   return (
     <header className="bg-white shadow-md px-4 py-3 flex items-center justify-between sticky top-0 z-50">
@@ -37,6 +44,7 @@ export default function Header({ title }: { title: string }) {
                   alt="logout"
                   title="Đăng xuất"
                   className="mr-4 cursor-pointer"
+                  onClick={handleLogout}
                 />
               </div>
               {user?.position &&

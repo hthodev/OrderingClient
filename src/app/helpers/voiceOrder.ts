@@ -3,7 +3,7 @@ export const playVoice = async (message: string) => {
     const res = await fetch("https://api.fpt.ai/hmi/tts/v5", {
       method: "POST",
       headers: {
-        "api-key": process.env.TEXT_TO_SPEECH_KEY || "",
+        "api-key": process.env.TEXT_TO_SPEECH_KEY || "JmoEolL3Is3UQk2uVTvQDlIWP3UByQfu",
         speed: "-1",
         voice: "banmai",
         "Content-Type": "text/plain",
