@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import KitchenDashboard from "../components/Cooking";
-import Header from "../components/Header";
+import Header from "../components/shared/Header";
 
 export default function CookingPage() {
 

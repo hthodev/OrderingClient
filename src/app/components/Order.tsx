@@ -6,13 +6,12 @@ import { Button } from "./ui/button";
 import Select from "react-select";
 import FOOD from "../constants/foods";
 import FoodService, { Food, Order } from "../services/food";
-import { confirmAlert } from "react-confirm-alert";
-import "react-confirm-alert/src/react-confirm-alert.css";
 import TableService, { FullTable } from "../services/table";
 import BillPrint from "./Bill";
 import LocalStorage from "../helpers/localstorage";
 import { useRouter } from "next/navigation";
 import Modal from "./Modal";
+import { useConfirm } from "./shared/ConfirmProvider";
 
 export default function OrderForm({
   foods,
@@ -22,7 +21,6 @@ export default function OrderForm({
   watchOrder = false,
   toast,
   onClose,
-  onTableUpdate,
 }: {
   foods: Food[];
   table: FullTable;
@@ -30,8 +28,7 @@ export default function OrderForm({
   checkout?: boolean;
   watchOrder?: boolean;
   toast?: any;
-  onClose: () => void;
-  onTableUpdate?: any;
+  onClose: ({ closeModal }: { closeModal: boolean }) => {};
 }) {
   const defaultItems: any[] = [];
 
@@ -53,6 +50,7 @@ export default function OrderForm({
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  const confirm = useConfirm();
 
   const handleChange = (index: number, field: string, value: any) => {
     const updated: any[] = [...items];
@@ -130,6 +128,7 @@ export default function OrderForm({
               }))
             );
             toast.success("Đã order thêm món thành công!");
+            onClose({ closeModal: false });
           } else {
             throw Error();
           }
@@ -143,26 +142,17 @@ export default function OrderForm({
             table._id
           );
           toast.success("Order thành công!");
+          onClose({ closeModal: true });
         }
-        onClose();
       } catch (error: any) {
         alert("Có lỗi xảy ra khi gửi đơn hàng.");
         toast.error(error?.message);
       }
     };
 
-    confirmAlert({
-      message:
-        "Việc xác nhận đơn sẽ được thông báo xuống bếp. Nếu đã xác nhận sau đó có sự thay đổi order của khách. Vui lòng xuống bếp để thông báo sự thay đổi, hệ thống sẽ không đọc hủy order?",
-      buttons: [
-        {
-          label: "Xác nhận",
-          onClick: async () => await handleOrder(),
-        },
-        {
-          label: "Hủy",
-        },
-      ],
+    confirm({
+      message: "Việc xác nhận đơn sẽ được thông báo xuống bếp. Nếu đã xác nhận sau đó có sự thay đổi order của khách. Vui lòng xuống bếp để thông báo sự thay đổi, hệ thống sẽ không đọc hủy order?",
+      onConfirm: async () => await handleOrder(),
     });
   };
 
@@ -198,6 +188,7 @@ export default function OrderForm({
               </div>
             </div>
           );
+          onClose({ closeModal: false })
           setModalOpen(true);
           const tableUpdate = await TableService.TableDetail(table._id);
           if (tableUpdate.order?.foods) setItems(tableUpdate.order.foods);
@@ -225,31 +216,16 @@ export default function OrderForm({
     }
 
     if (isNoBanhTrang || isNoDrink) {
-      confirmAlert({
+          confirm({
         message: `Hoá đơn ở bàn này ${messages.join(" và ")}`,
-        buttons: [
-          {
-            label: "Bàn này không sử dụng",
-            onClick: async () => await handleOrder(),
-          },
-          {
-            label: "Kiểm tra lại",
-          },
-        ],
-      });
+      onConfirm: async () => await handleOrder(),
+    });
     } else {
-      confirmAlert({
+                confirm({
         message: "Đã chắc chắn nhập đúng số lượng trả về chưa?",
-        buttons: [
-          {
-            label: "Chắc chắn",
-            onClick: async () => await handleOrder(),
-          },
-          {
-            label: "Chưa",
-          },
-        ],
-      });
+      onConfirm: async () => await handleOrder(),
+    });
+
     }
   };
 
@@ -360,7 +336,7 @@ export default function OrderForm({
 
         {!watchOrder && (
           <div className="flex justify-end space-x-4 px-3 pb-3">
-            <Button onClick={onClose} className="bg-gray-100 text-gray-700">
+            <Button onClick={() => onClose({ closeModal: true })} className="bg-gray-100 text-gray-700">
               Huỷ
             </Button>
             {checkout ? (

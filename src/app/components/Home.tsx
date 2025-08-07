@@ -8,8 +8,8 @@ import USER from "../constants/users";
 const pages = [
   { name: "Trang Order", href: "/table" },
   { name: "Trang Bếp", href: "/cooking" },
-  { name: "Trang Báo Cáo", href: "/report" },
-  { name: "Trang Quản lý", href: "/manager" },
+  { name: "Trang Báo Cáo", href: "/manager/report" },
+  { name: "Trang Quản lý", href: "/manager/food" },
 ];
 
 export default function Home() {

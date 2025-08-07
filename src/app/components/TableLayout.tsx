@@ -11,7 +11,7 @@ import Loading from "./Loading";
 import socket from "../lib/socket-io";
 import SOCKET_GATEWAY from "../constants/socket";
 import toast, { Toaster } from "react-hot-toast";
-import { confirmAlert } from "react-confirm-alert";
+import { useConfirm } from "./shared/ConfirmProvider";
 
 export default function TableLayout() {
   const [showOfficial, setShowOfficial] = useState(true);
@@ -25,6 +25,8 @@ export default function TableLayout() {
   const [extendedTables, setExtendedTables] = useState<string[][]>([]);
   const [fullTables, setFullTables] = useState<FullTable[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const confirm = useConfirm();
+
   const fetchTableLayout = async () => {
     try {
       const [layouts, tables] = await Promise.all([
@@ -66,9 +68,9 @@ export default function TableLayout() {
     };
   }, []);
 
-  const handleOnClose = async () => {
+  const handleOnClose = async ({ closeModal = true }: { closeModal?: boolean }) => {
     await fetchTableLayout();
-    setModalOpen(false);
+    closeModal && setModalOpen(false);
   };
 
   const handleSelect = async (table: FullTable, action: string) => {
@@ -123,7 +125,7 @@ export default function TableLayout() {
             order={table.order}
             checkout={false}
             watchOrder={true}
-            onClose={() => setModalOpen(false)}
+            onClose={() => setModalOpen}
           />
         );
         setModalOpen(true);
@@ -133,20 +135,12 @@ export default function TableLayout() {
           const handleOrder = async () => {
             if (table?.order?._id)
               await FoodService.CustomerPaid(table.order._id);
-              await handleOnClose();
-              toast.success(`Khách hàng đã thanh toán - Bàn ${table.name}`);
+            await handleOnClose({ closeModal: true });
+            toast.success(`Khách hàng đã thanh toán - Bàn ${table.name}`);
           };
-          confirmAlert({
+          confirm({
             message: `Xác nhận BÀN ${table.name} đã thanh toán?`,
-            buttons: [
-              {
-                label: "Xác nhận",
-                onClick: async () => await handleOrder(),
-              },
-              {
-                label: "Chưa",
-              },
-            ],
+            onConfirm: async () => await handleOrder(),
           });
         } catch (error) {
           alert("Có lỗi xảy ra khi gửi đơn hàng.");

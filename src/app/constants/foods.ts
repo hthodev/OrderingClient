@@ -17,6 +17,15 @@ export default class FOOD {
     NUOC: "Nước",
     BANH_TRANG: "Bánh tráng"
   } as const;
+
+  static readonly UNIT = {
+    DIA: "dĩa",
+    LON: "lon",
+    CHAI: "chai",
+    NOI: "nồi",
+    CON: "con",
+    O: "ổ",
+  }
 }
 
 export type FoodCategory = typeof FOOD.CATEGORY[keyof typeof FOOD.CATEGORY];

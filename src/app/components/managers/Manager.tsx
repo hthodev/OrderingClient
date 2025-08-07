@@ -1,27 +1,37 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
-import ReportManagement from "./Report";
-import FoodManagement from "./Food";
-import AccountManagement from "./Account";
 import { userDecode } from "@/app/helpers/decodeJwt";
+import { useRouter, usePathname } from "next/navigation";
 
 const sections = [
-  "Báo cáo doanh số",
-  "Quản lý món ăn",
-  "Quản lý tài khoản nhân viên",
-  "Thống kê món ăn",
-  "Quán lý bàn ăn",
-  "Quản lý nhập hàng",
+  { lable: "Quay về trang chủ", slug: "" },
+  { lable: "Báo cáo doanh số", slug: "report" },
+  { lable: "Quản lý món ăn", slug: "food" },
+  // { lable: "Quản lý tài khoản nhân viên", slug: "account" },
+  // { lable: "Quán lý bàn ăn", slug: "table" },
+  // { lable: "Quản lý nhập hàng", slug: "" }
 ];
 
 export default function Manager() {
-  const [activeSection, setActiveSection] = useState(sections[0]);
   const [showSidebar, setShowSidebar] = useState(false);
   const user = useMemo(() => userDecode(), []);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Lấy slug cuối trong URL (/manager/food => "food")
+  const activeSlug = pathname?.split("/")[2] || "";
+
+  const navigation = (slug: string) => {
+    if (!slug) {
+      router.push(`/`);
+    } else {
+      router.push(`/manager/${slug}`);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex relative bg-slate-100">
+    <div className="flex relative bg-slate-100">
       <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white shadow flex items-center px-4 z-30">
         <button
           onClick={() => setShowSidebar(!showSidebar)}
@@ -47,45 +57,24 @@ export default function Manager() {
         )}
         style={{ paddingTop: "3.5rem" }}
       >
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          Xin chào, {user?.username}
-        </h2>
         {sections.map((section) => (
           <button
-            key={section}
+            key={section.slug}
             onClick={() => {
-              setActiveSection(section);
               setShowSidebar(false);
+              navigation(section.slug);
             }}
             className={clsx(
               "w-full text-left px-4 py-2 rounded-lg transition",
-              activeSection === section
+              section.slug === activeSlug
                 ? "bg-blue-600 text-white shadow"
                 : "hover:bg-blue-100 text-gray-700"
             )}
           >
-            {section}
+            {section.lable}
           </button>
         ))}
       </aside>
-
-      <main
-        className={clsx(
-          "flex-1 p-6 transition-all duration-300",
-          "pt-16 md:pt-6",
-          "md:ml-64"
-        )}
-        onClick={() => {
-          if (!showSidebar) return;
-          setShowSidebar(false);
-        }}
-      >
-        {activeSection === "Báo cáo doanh số" && <ReportManagement />}
-        {activeSection === "Quản lý món ăn" && <FoodManagement />}
-        {activeSection === "Quản lý tài khoản nhân viên" && (
-          <AccountManagement />
-        )}
-      </main>
     </div>
   );
 }
