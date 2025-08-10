@@ -63,63 +63,69 @@ export default function FoodManagement() {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex">
       <Manager />
-      <div className="p-4 space-y-6 w-full mt-14">
-        <FormInput onClose={handleOnClose} />
-      </div>
-      <div className="p-4 space-y-6 w-full">
-        {Object.entries(FOOD.CATEGORY).map(([key, label]) => {
-          const filteredFoods = foods.filter(
-            (food: Food) => food.category === label
-          );
 
-          if (filteredFoods.length === 0) return null;
+      <div className="flex-1 w-full">
+        <div className="p-4 space-y-6 w-full mt-14 md:mt-4">
+          <FormInput onClose={handleOnClose} />
+        </div>
 
-          return (
-            <div key={key} className="space-y-2 mb-8">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">{label}</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm text-left border">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-2 border">Tên món</th>
-                      <th className="p-2 border">Giá</th>
-                      <th className="p-2 border">Đơn vị</th>
-                      <th className="p-2 border">Tình trạng</th>
-                      <th className="p-2 border">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredFoods.map((food: Food, index: number) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2 border">{food.name}</td>
-                        <td className="p-2 border">{food.price}</td>
-                        <td className="p-2 border">{food.unit}</td>
-                        <td className="p-2 border">
-                          {food.isSell ? "Đang bán" : "Ngưng bán"}
-                        </td>
-                        <td className="p-2 border">
-                          <div className="flex gap-2">
-                            <Button onClick={() => handleEdit(food)}>
-                              <Pencil size={16} />
-                            </Button>
-                            <Button onClick={() => handleDelete(food)}>
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
-                        </td>
+        <div className="p-4 space-y-6 w-full">
+          {Object.entries(FOOD.CATEGORY).map(([key, label]) => {
+            const filteredFoods = foods.filter(
+              (food: Food) => food.category === label
+            );
+
+            if (filteredFoods.length === 0) return null;
+
+            return (
+              <div key={key} className="space-y-2 mb-8">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold">{label}</h2>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm text-left border">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="p-2 border">Tên món</th>
+                        <th className="p-2 border">Giá</th>
+                        <th className="p-2 border">Đơn vị</th>
+                        <th className="p-2 border">Tình trạng</th>
+                        <th className="p-2 border">Hành động</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredFoods.map((food: Food, index: number) => (
+                        <tr key={index} className="border-b">
+                          <td className="p-2 border">{food.name}</td>
+                          <td className="p-2 border">{food.price}</td>
+                          <td className="p-2 border">{food.unit}</td>
+                          <td className="p-2 border">
+                            {food.isSell ? "Đang bán" : "Ngưng bán"}
+                          </td>
+                          <td className="p-2 border">
+                            <div className="flex gap-2">
+                              <Button onClick={() => handleEdit(food)}>
+                                <Pencil size={16} />
+                              </Button>
+                              <Button onClick={() => handleDelete(food)}>
+                                <Trash2 size={16} />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

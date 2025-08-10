@@ -5,15 +5,15 @@ import { userDecode } from "@/app/helpers/decodeJwt";
 import { useRouter, usePathname } from "next/navigation";
 
 const sections = [
-  { lable: "Quay về trang chủ", slug: "" },
   { lable: "Báo cáo doanh số", slug: "report" },
+  { lable: "Báo cáo hoá đơn", slug: "report-invoice" },
   { lable: "Quản lý món ăn", slug: "food" },
   // { lable: "Quản lý tài khoản nhân viên", slug: "account" },
   // { lable: "Quán lý bàn ăn", slug: "table" },
   // { lable: "Quản lý nhập hàng", slug: "" }
 ];
 
-export default function Manager() {
+export default function ManagerSidebarLeft() {
   const [showSidebar, setShowSidebar] = useState(false);
   const user = useMemo(() => userDecode(), []);
   const router = useRouter();
@@ -23,23 +23,26 @@ export default function Manager() {
   const activeSlug = pathname?.split("/")[2] || "";
 
   const navigation = (slug: string) => {
-    if (!slug) {
-      router.push(`/`);
-    } else {
+    if (slug) {
       router.push(`/manager/${slug}`);
     }
   };
 
   return (
     <div className="flex relative bg-slate-100">
-      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white shadow flex items-center px-4 z-30">
-        <button
-          onClick={() => setShowSidebar(!showSidebar)}
-          className="text-2xl text-gray-700"
-        >
-          ☰
-        </button>
-        <h1 className="ml-4 text-lg font-semibold">Quản lý</h1>
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white shadow flex items-center justify-between px-4 z-30">
+        <div className="flex items-center">
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="text-2xl text-gray-700 mr-4"
+          >
+            ☰
+          </button>
+          <h1 className="text-lg font-semibold">Quản lý</h1>
+        </div>
+        <h1 className="text-lg font-semibold text-gray-800 cursor-pointer" onClick={() => { router.push('/') }}>
+          Quay về trang chủ
+        </h1>
       </header>
 
       {showSidebar && (

@@ -51,6 +51,8 @@ export default function OrderForm({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
   const confirm = useConfirm();
+  const [disableItemOrderAfterConfirm, setDisableItemOrderAfterConfirm] = useState(false);
+
 
   const handleChange = (index: number, field: string, value: any) => {
     const updated: any[] = [...items];
@@ -125,9 +127,11 @@ export default function OrderForm({
               items.map((item) => ({
                 ...item,
                 quantity: Math.max(0, item.quantity - (item.return || 0)),
-              }))
+              })).filter(item => item.name)
             );
             toast.success("Đã order thêm món thành công!");
+            setItems(prev => prev.filter(item => item.name)) // lọc item rác
+            setDisableItemOrderAfterConfirm(true)
             onClose({ closeModal: false });
           } else {
             throw Error();
@@ -138,7 +142,7 @@ export default function OrderForm({
             items.map((item) => ({
               ...item,
               quantity: Math.max(0, item.quantity - (item.return || 0)),
-            })),
+            })).filter(item => item.name),
             table._id
           );
           toast.success("Order thành công!");
@@ -151,7 +155,8 @@ export default function OrderForm({
     };
 
     confirm({
-      message: "Việc xác nhận đơn sẽ được thông báo xuống bếp. Nếu đã xác nhận sau đó có sự thay đổi order của khách. Vui lòng xuống bếp để thông báo sự thay đổi, hệ thống sẽ không đọc hủy order?",
+      message:
+        "Việc xác nhận đơn sẽ được thông báo xuống bếp. Nếu đã xác nhận sau đó có sự thay đổi order của khách. Vui lòng xuống bếp để thông báo sự thay đổi, hệ thống sẽ không đọc hủy order?",
       onConfirm: async () => await handleOrder(),
     });
   };
@@ -188,11 +193,10 @@ export default function OrderForm({
               </div>
             </div>
           );
-          onClose({ closeModal: false })
+          onClose({ closeModal: false });
           setModalOpen(true);
           const tableUpdate = await TableService.TableDetail(table._id);
           if (tableUpdate.order?.foods) setItems(tableUpdate.order.foods);
-
         }
       } catch (error: any) {
         alert("Có lỗi xảy ra khi gửi đơn hàng.");
@@ -216,16 +220,15 @@ export default function OrderForm({
     }
 
     if (isNoBanhTrang || isNoDrink) {
-          confirm({
+      confirm({
         message: `Hoá đơn ở bàn này ${messages.join(" và ")}`,
-      onConfirm: async () => await handleOrder(),
-    });
+        onConfirm: async () => await handleOrder(),
+      });
     } else {
-                confirm({
+      confirm({
         message: "Đã chắc chắn nhập đúng số lượng trả về chưa?",
-      onConfirm: async () => await handleOrder(),
-    });
-
+        onConfirm: async () => await handleOrder(),
+      });
     }
   };
 
@@ -249,7 +252,7 @@ export default function OrderForm({
                       handleSelectFood(index, selectedOption.value);
                     }
                   }}
-                  isDisabled={checkout}
+                  isDisabled={checkout || watchOrder || order?.foods?.some((f) => f._id === item._id) || disableItemOrderAfterConfirm}
                   placeholder="Chọn món ăn"
                   isSearchable
                   styles={{
@@ -278,8 +281,8 @@ export default function OrderForm({
                   onChange={(e) =>
                     handleChange(index, "quantity", e.target.value)
                   }
-                  disabled={checkout}
-                  className={`!py-1.5 ${checkout && "bg-[#edecec]"}`}
+                  disabled={checkout || watchOrder}
+                  className={`!py-1.5 ${(checkout || watchOrder) && "bg-[#edecec]"}`}
                 />
                 {!checkout &&
                   !order?.foods?.some((f) => f._id === item._id) && (
@@ -336,7 +339,10 @@ export default function OrderForm({
 
         {!watchOrder && (
           <div className="flex justify-end space-x-4 px-3 pb-3">
-            <Button onClick={() => onClose({ closeModal: true })} className="bg-gray-100 text-gray-700">
+            <Button
+              onClick={() => onClose({ closeModal: true })}
+              className="bg-gray-100 text-gray-700"
+            >
               Huỷ
             </Button>
             {checkout ? (
@@ -360,13 +366,22 @@ export default function OrderForm({
         {watchOrder && (
           <div className="flex justify-end space-x-4 px-3 pb-3">
             <Button
-              onClick={() => {
-                setModalContent(
-                  <div>
-                    <BillPrint />{" "}
-                  </div>
-                );
-                setModalOpen(true);
+              onClick={async () => {
+                if (order?._id) {
+                  const response = await FoodService.CheckInvoice(
+                    order._id,
+                    []
+                  );
+                  LocalStorage.Bill.add(
+                    JSON.stringify({ ...response, tableName: table.name })
+                  );
+                  setModalContent(
+                    <div>
+                      <BillPrint />{" "}
+                    </div>
+                  );
+                  setModalOpen(true);
+                }
               }}
               className="bg-gray-100 text-gray-700"
             >

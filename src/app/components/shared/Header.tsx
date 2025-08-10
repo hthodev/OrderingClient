@@ -16,7 +16,7 @@ export default function Header({ title }: { title: string }) {
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const handleLogout = () => {
-    LocalStorage.User.remove();
+    LocalStorage.JwtToken.remove();
     router.push('/login')
   }
 

@@ -29,12 +29,38 @@ export interface TopFood {
   topBeers: TopBeerChartItem[];
 }
 
+export interface InvoiceList {
+  _id: string;
+  orderer: {
+    _id: string;
+    username: string;
+    fullName: string;
+  };
+  cashier?: {
+    _id: string;
+    username: string;
+    fullName: string;
+  };
+  table: {
+    _id: string;
+    name: string;
+  };
+  isPayment: boolean;
+  createdAt: string;
+  updatedAt: string;
+  paymentTime?: string;
+  total: number;
+}
+
 export default class ManagerService {
-  static async OrdersByTimeRange(type: string): Promise<OrdersByTimeRange> {
+  static async OrdersByTimeRange(
+    date: string,
+    type: string
+  ): Promise<OrdersByTimeRange> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await apiRequest.get(
-          `/manager/orders/ordersByTimeRange?type=${type}`
+          `/manager/orders/ordersByTimeRange?type=${type}&date=${date}`
         );
         if (result?.statusCode === 200) {
           return resolve(result);
@@ -47,11 +73,11 @@ export default class ManagerService {
     });
   }
 
-  static async TopFoods(type: string): Promise<TopFood> {
+  static async TopFoods(date: string, type: string): Promise<TopFood> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await apiRequest.get(
-          `/manager/foods/topFoods?type=${type}`
+          `/manager/foods/topFoods?type=${type}&date=${date}`
         );
         if (result?.statusCode === 200) {
           return resolve(result);
@@ -101,6 +127,23 @@ export default class ManagerService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await apiRequest.delete(`/food/deleteFood/${_id}`);
+        if (result?.statusCode === 200) {
+          return resolve(result);
+        } else {
+          return reject(result);
+        }
+      } catch (error: any) {
+        return reject(error);
+      }
+    });
+  }
+
+  static async InvoicesByDate(date: string | Date): Promise<InvoiceList[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await apiRequest.get(
+          `/manager/orders/invoicesByDate?date=${date}`
+        );
         if (result?.statusCode === 200) {
           return resolve(result);
         } else {

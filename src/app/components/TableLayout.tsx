@@ -68,7 +68,11 @@ export default function TableLayout() {
     };
   }, []);
 
-  const handleOnClose = async ({ closeModal = true }: { closeModal?: boolean }) => {
+  const handleOnClose = async ({
+    closeModal = true,
+  }: {
+    closeModal?: boolean;
+  }) => {
     await fetchTableLayout();
     closeModal && setModalOpen(false);
   };
@@ -150,6 +154,22 @@ export default function TableLayout() {
     }
   };
 
+  function formatDay(iso?: string | Date) {
+    if (!iso) return;
+    const d = new Date(iso);
+    const parts = new Intl.DateTimeFormat("vi-VN", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(d);
+
+    const get = (t: any) => parts.find((p) => p.type === t)?.value || "";
+    return `${get("day")}/${get("month")} ${get("hour")}:${get("minute")}`;
+  }
+
   const renderTableSection = (tables: string[][]) => (
     <div className="space-y-4 mt-2">
       {tables.map((row, rowIndex) => (
@@ -167,27 +187,32 @@ export default function TableLayout() {
                       prev === tableNumber ? null : tableNumber
                     )
                   }
-                  className={`flex items-center space-x-2 ${
+                  className={`flex flex-col items-center space-x-2 min-h-20 ${
                     table?.havingGuests ? "bg-green-500" : "bg-gray-100"
-                  } px-3 py-2 rounded shadow-sm w-24 justify-center cursor-pointer`}
+                  } px-7 py-2 rounded shadow-sm w-24 justify-center cursor-pointer"`}
                 >
-                  <Image
-                    src="g_table.svg"
-                    alt={`Table ${tableNumber}`}
-                    width={36}
-                    height={36}
-                    className={`${
-                      table?.havingGuests &&
-                      "filter brightness-0 invert sepia saturate-1000 hue-rotate-[90deg]"
-                    }`}
-                  />
-                  <span
-                    className={`font-semibold ${
-                      table?.havingGuests ? "text-white" : "text-gray-800"
-                    } text-lg text-center`}
-                  >
-                    {tableNumber}
-                  </span>
+                  <div className="flex">
+                    <Image
+                      src="g_table.svg"
+                      alt={`Table ${tableNumber}`}
+                      width={36}
+                      height={36}
+                      className={`${
+                        table?.havingGuests &&
+                        "filter brightness-0 invert sepia saturate-1000 hue-rotate-[90deg]"
+                      }`}
+                    />
+                    <span
+                      className={`font-semibold ml-2 ${
+                        table?.havingGuests ? "text-white" : "text-gray-800"
+                      } text-lg text-center`}
+                    >
+                      {tableNumber}
+                    </span>
+                  </div>
+                  <span className="whitespace-nowrap text-white mt-2 font-bold">
+                    {formatDay(table.order?.createdAt)}
+                  </span>{" "}
                 </div>
 
                 {/* Dropdown menu */}
