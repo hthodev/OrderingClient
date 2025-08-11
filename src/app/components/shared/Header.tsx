@@ -50,10 +50,10 @@ export default function Header({ title }: { title: string }) {
                   (user as any).position
                 ) && (
                   <div>
-                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => router.push("/manager/food")}>
                       Quản lý
                     </li>
-                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => router.push("/manager/report")}>
                       Thống kê - báo cáo
                     </li>
                   </div>
