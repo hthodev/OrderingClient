@@ -1,14 +1,26 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CheckInvoice } from "../services/food";
 import LocalStorage from "../helpers/localstorage";
 import Loading from "./Loading";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
-export default function BillPrint(
-  
-) {
+const fmtDate = (d: Date) => format(d, "dd/MM/yyyy", { locale: vi });
+const fmtTime = (d: Date) => format(d, "HH:mm", { locale: vi });
+
+export default function BillPrint() {
   const [billData, setBillData] = useState<CheckInvoice>();
   const [isLoading, setIsLoading] = useState(true);
+  const paymentTime = useMemo(
+    () =>
+      billData?.paymentTime
+        ? `${fmtDate(new Date(billData.paymentTime))} ${fmtTime(
+            new Date(billData.paymentTime)
+          )}`
+        : null,
+    [billData]
+  );
 
   useEffect(() => {
     const data = LocalStorage.Bill.get();
@@ -43,7 +55,7 @@ export default function BillPrint(
         </div>
 
         <div className="flex justify-between text-sm">
-          <div>Ngày: {new Date().toLocaleString()}</div>
+          <div>Ngày: {paymentTime || new Date().toLocaleString()}</div>
           <div>Bàn: {billData?.tableName}</div>
         </div>
 

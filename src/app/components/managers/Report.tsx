@@ -141,9 +141,9 @@ export default function ReportManagement() {
   }
 
   return (
-    <div className="flex">
+    <div className="flex flex-1 w-full">
       <Manager />
-      <section className="w-full mt-14 p-4">
+      <section className="mt-14 p-4">
         {/* Header */}
         <div className="max-w-5xl mx-auto">
           <h1 className="text-2xl font-bold mb-1">📊 Báo cáo doanh số</h1>

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "npm run build && tar -czf .next.tar.gz .next",
+    "export": "rm -rf .next .next.tar.gz && npm run build && tar -czf .next.tar.gz .next",
     "import": "tar -xzf .next.tar.gz"
   },
   "dependencies": {

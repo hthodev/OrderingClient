@@ -48,8 +48,22 @@ export interface InvoiceList {
   isPayment: boolean;
   createdAt: string;
   updatedAt: string;
-  paymentTime?: string;
+  paymentTime: string;
   total: number;
+}
+
+export interface Users {
+  _id: string;
+  username: string;
+  fullName: string;
+  gender: "MALE" | "FEMALE";
+  phone: string;
+  image: string;
+  position: string;
+  isActive: true;
+  createdAt: string;
+  updatedAt: string;
+  itsMe?: boolean;
 }
 
 export default class ManagerService {
@@ -144,6 +158,21 @@ export default class ManagerService {
         const result = await apiRequest.get(
           `/manager/orders/invoicesByDate?date=${date}`
         );
+        if (result?.statusCode === 200) {
+          return resolve(result);
+        } else {
+          return reject(result);
+        }
+      } catch (error: any) {
+        return reject(error);
+      }
+    });
+  }
+
+  static async Accounts(position: string, search:string): Promise<Users[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await apiRequest.get(`/manager/users/accounts?position=${position}&search=${search}`);
         if (result?.statusCode === 200) {
           return resolve(result);
         } else {

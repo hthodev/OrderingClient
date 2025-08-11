@@ -67,7 +67,7 @@ export default function FoodManagement() {
       <Manager />
 
       <div className="flex-1 w-full">
-        <div className="p-4 space-y-6 w-full mt-14 md:mt-4">
+        <div className="p-4 space-y-6 w-full mt-18">
           <FormInput onClose={handleOnClose} />
         </div>
 

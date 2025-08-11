@@ -34,6 +34,7 @@ export interface CheckInvoice {
   totalBill: number;
   tableName?: string;
   coupon?: number;
+  paymentTime?: string;
 }
 
 export default class FoodService {

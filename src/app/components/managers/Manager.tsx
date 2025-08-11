@@ -2,22 +2,32 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { userDecode } from "@/app/helpers/decodeJwt";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, notFound } from "next/navigation";
+import USER from "@/app/constants/users";
+import Image from "next/image";
+import LocalStorage from "@/app/helpers/localstorage";
 
+const user = userDecode();
 const sections = [
   { lable: "Báo cáo doanh số", slug: "report" },
   { lable: "Báo cáo hoá đơn", slug: "report-invoice" },
   { lable: "Quản lý món ăn", slug: "food" },
-  // { lable: "Quản lý tài khoản nhân viên", slug: "account" },
   // { lable: "Quán lý bàn ăn", slug: "table" },
   // { lable: "Quản lý nhập hàng", slug: "" }
 ];
 
+if (user?.position === USER.POSITION.OWNER) {
+  sections.push({ lable: "Quản lý tài khoản nhân viên", slug: "account" });
+}
+
 export default function ManagerSidebarLeft() {
   const [showSidebar, setShowSidebar] = useState(false);
-  const user = useMemo(() => userDecode(), []);
   const router = useRouter();
   const pathname = usePathname();
+
+  if (!user) {
+    notFound();
+  }
 
   // Lấy slug cuối trong URL (/manager/food => "food")
   const activeSlug = pathname?.split("/")[2] || "";
@@ -28,9 +38,14 @@ export default function ManagerSidebarLeft() {
     }
   };
 
+  const handleLogout = () => {
+    LocalStorage.JwtToken.remove();
+    router.push("/login");
+  };
+
   return (
-    <div className="flex relative bg-slate-100">
-      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white shadow flex items-center justify-between px-4 z-30">
+    <div className="flex bg-slate-100">
+      <header className="fixed top-0 left-0 right-0 h-14 bg-white shadow flex items-center justify-between px-4 z-30">
         <div className="flex items-center">
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -40,7 +55,12 @@ export default function ManagerSidebarLeft() {
           </button>
           <h1 className="text-lg font-semibold">Quản lý</h1>
         </div>
-        <h1 className="text-lg font-semibold text-gray-800 cursor-pointer" onClick={() => { router.push('/') }}>
+        <h1
+          className="text-lg font-semibold text-gray-800 cursor-pointer"
+          onClick={() => {
+            router.push("/");
+          }}
+        >
           Quay về trang chủ
         </h1>
       </header>
@@ -60,6 +80,22 @@ export default function ManagerSidebarLeft() {
         )}
         style={{ paddingTop: "3.5rem" }}
       >
+        <div className="flex justify-between mt-3">
+          <h1 className="text-xl font-bold text-gray-800">
+            Hi,{" "}
+            <span className="text-red-400 font-bold">{user.username}</span>
+          </h1>
+          <Image
+            height={20}
+            width={20}
+            src="/logout.svg"
+            alt="logout"
+            title="Đăng xuất"
+            className="mr-4 cursor-pointer"
+            onClick={handleLogout}
+          />
+        </div>
+
         {sections.map((section) => (
           <button
             key={section.slug}

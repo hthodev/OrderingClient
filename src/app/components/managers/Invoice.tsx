@@ -56,6 +56,10 @@ import ManagerSidebarLeft from "./Manager";
 import ManagerService, { InvoiceList } from "@/app/services/manager";
 import Loading from "../Loading";
 import TableService from "@/app/services/table";
+import Modal from "../Modal";
+import FoodService from "@/app/services/food";
+import LocalStorage from "@/app/helpers/localstorage";
+import BillPrint from "../Bill";
 
 // Types
 export type Invoice = {
@@ -84,6 +88,8 @@ export default function InvoiceManagement() {
   const [tableFilter, setTableFilter] = useState<string>("all");
   const [minTotal, setMinTotal] = useState<string>("");
   const [maxTotal, setMaxTotal] = useState<string>("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
   const dayStart = startOfDay(day);
   const dayEnd = endOfDay(day);
@@ -116,6 +122,24 @@ export default function InvoiceManagement() {
     setTableFilter("all");
     setMinTotal("");
     setMaxTotal("");
+  };
+
+  const handleViewInvoice = async (inv: InvoiceList) => {
+    if (inv?._id) {
+      const response = await FoodService.CheckInvoice(inv._id, []);
+      LocalStorage.Bill.add(
+        JSON.stringify({
+          ...response,
+          tableName: inv?.table?.name,
+        })
+      );
+      setModalContent(
+        <div>
+          <BillPrint />{" "}
+        </div>
+      );
+      setModalOpen(true);
+    }
   };
 
   if (isLoading) {
@@ -292,16 +316,17 @@ export default function InvoiceManagement() {
                     </TableRow>
                   ) : (
                     invoices.map((inv) => {
-                      const d = new Date(inv.createdAt);
+                      const paymentTime = new Date(inv.paymentTime);
                       return (
                         <TableRow
                           key={inv._id}
-                          className="hover:bg-slate-50/60"
+                          className="hover:bg-slate-50/60 cursor-pointer"
+                          onClick={() => handleViewInvoice(inv)}
                         >
                           <TableCell>
                             <div className="font-medium">{inv._id}</div>
                           </TableCell>
-                          <TableCell>{fmtTime(d)}</TableCell>
+                          <TableCell>{fmtTime(paymentTime)}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="rounded-xl">
                               {inv.table.name}
@@ -333,7 +358,8 @@ export default function InvoiceManagement() {
                     </div>
                   ) : (
                     invoices.map((inv) => {
-                      const d = new Date(inv.createdAt);
+                      const paymentTime = new Date(inv.paymentTime);
+
                       return (
                         <motion.div
                           key={inv._id}
@@ -343,11 +369,14 @@ export default function InvoiceManagement() {
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.2 }}
                           className="mb-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                          onClick={() => handleViewInvoice(inv)}
                         >
                           <div className="flex items-center justify-between">
-                            <div className="font-semibold">{fmtDate(d)}</div>
+                            <div className="font-semibold">
+                              {fmtDate(paymentTime)}
+                            </div>
                             <div className="text-sm text-muted-foreground">
-                              {fmtTime(d)}
+                              {fmtTime(paymentTime)}
                             </div>
                           </div>
                           <div className="mt-2 flex items-center justify-between">
@@ -370,6 +399,9 @@ export default function InvoiceManagement() {
                 </AnimatePresence>
               </ScrollArea>
             </div>
+            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
+              {modalContent}
+            </Modal>
           </div>
 
           {/* Footer tip */}
