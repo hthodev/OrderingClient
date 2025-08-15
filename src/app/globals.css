@@ -128,21 +128,51 @@ body {
 
 @media print {
   @page {
-    size: 80mm auto;
-    margin: 0;
+    size: auto;   /* full khổ in */
+    margin: 0;    /* bỏ margin mặc định */
   }
 
-  body {
+  body { margin: 0; padding: 0; }
+
+  /* ❗ Tắt flex khi in để cho phép phân trang, tránh trang trắng */
+  .print-safe {
+    display: block !important;
+    align-items: initial !important;
+    justify-content: initial !important;
+    padding: 0 !important;
+  }
+
+  .bill-print {
+    width: 100% !important;   /* full chiều ngang */
+    max-width: none !important;
     margin: 0;
     padding: 0;
   }
 
-  .bill-print {
-    width: 80mm;
+  /* Không lặp header ở trang sau */
+  .bill-print thead { display: table-row-group !important; }
+  .bill-print tfoot { display: table-row-group !important; }
+
+  /* Tránh xé đôi 1 hàng */
+  .bill-print tr,
+  .bill-print td,
+  .bill-print th {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
-  button,
-  .print\:hidden {
-    display: none !important;
+  /* Ép NGẮT TRANG sau bảng, trước phần tổng kết */
+  .page-break {
+    break-after: page;                 /* chuẩn */
+    page-break-after: always;          /* fallback cũ */
+    -webkit-column-break-after: always;/* Safari cũ */
+  }
+
+  /* (tuỳ chọn) Thu gọn khi in cho đỡ tốn giấy */
+  .bill-print td, .bill-print th {
+    padding: 0.1rem;
+    line-height: 1.1;
   }
 }
+
+

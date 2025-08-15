@@ -3,8 +3,6 @@ import ManagerRoute from "@/app/pages/ManagerRoute";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  // Nếu cần:
-  // searchParams?: Promise<{ [k: string]: string | string[] | undefined }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

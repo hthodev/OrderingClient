@@ -135,7 +135,7 @@ export default function InvoiceManagement() {
       );
       setModalContent(
         <div>
-          <BillPrint />{" "}
+          <BillPrint isViewFromCpn={true} />
         </div>
       );
       setModalOpen(true);

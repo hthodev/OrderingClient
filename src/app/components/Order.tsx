@@ -51,8 +51,8 @@ export default function OrderForm({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
   const confirm = useConfirm();
-  const [disableItemOrderAfterConfirm, setDisableItemOrderAfterConfirm] = useState(false);
-
+  const [disableItemOrderAfterConfirm, setDisableItemOrderAfterConfirm] =
+    useState(false);
 
   const handleChange = (index: number, field: string, value: any) => {
     const updated: any[] = [...items];
@@ -124,14 +124,16 @@ export default function OrderForm({
           if (table?.order?._id) {
             await FoodService.OrderMore(
               table.order._id,
-              items.map((item) => ({
-                ...item,
-                quantity: Math.max(0, item.quantity - (item.return || 0)),
-              })).filter(item => item.name)
+              items
+                .map((item) => ({
+                  ...item,
+                  quantity: Math.max(0, item.quantity - (item.return || 0)),
+                }))
+                .filter((item) => item.name)
             );
             toast.success("Đã order thêm món thành công!");
-            setItems(prev => prev.filter(item => item.name)) // lọc item rác
-            setDisableItemOrderAfterConfirm(true)
+            setItems((prev) => prev.filter((item) => item.name)); // lọc item rác
+            setDisableItemOrderAfterConfirm(true);
             onClose({ closeModal: false });
           } else {
             throw Error();
@@ -139,10 +141,12 @@ export default function OrderForm({
         } else {
           // ngược lại là order mới
           await FoodService.Order(
-            items.map((item) => ({
-              ...item,
-              quantity: Math.max(0, item.quantity - (item.return || 0)),
-            })).filter(item => item.name),
+            items
+              .map((item) => ({
+                ...item,
+                quantity: Math.max(0, item.quantity - (item.return || 0)),
+              }))
+              .filter((item) => item.name),
             table._id
           );
           toast.success("Order thành công!");
@@ -182,7 +186,7 @@ export default function OrderForm({
 
           setModalContent(
             <div>
-              <BillPrint />
+              <BillPrint isViewFromCpn={true} />
               <div className="flex justify-end space-x-4 px-3 pb-3 mt-2">
                 <Button
                   onClick={() => router.push("/bill")}
@@ -252,7 +256,12 @@ export default function OrderForm({
                       handleSelectFood(index, selectedOption.value);
                     }
                   }}
-                  isDisabled={checkout || watchOrder || order?.foods?.some((f) => f._id === item._id) || disableItemOrderAfterConfirm}
+                  isDisabled={
+                    checkout ||
+                    watchOrder ||
+                    order?.foods?.some((f) => f._id === item._id) ||
+                    disableItemOrderAfterConfirm
+                  }
                   placeholder="Chọn món ăn"
                   isSearchable
                   styles={{
@@ -282,7 +291,9 @@ export default function OrderForm({
                     handleChange(index, "quantity", e.target.value)
                   }
                   disabled={checkout || watchOrder}
-                  className={`!py-1.5 ${(checkout || watchOrder) && "bg-[#edecec]"}`}
+                  className={`!py-1.5 ${
+                    (checkout || watchOrder) && "bg-[#edecec]"
+                  }`}
                 />
                 {!checkout &&
                   !order?.foods?.some((f) => f._id === item._id) && (
@@ -377,7 +388,7 @@ export default function OrderForm({
                   );
                   setModalContent(
                     <div>
-                      <BillPrint />{" "}
+                      <BillPrint isViewFromCpn={true} />
                     </div>
                   );
                   setModalOpen(true);
