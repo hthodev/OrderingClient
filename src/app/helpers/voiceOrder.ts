@@ -3,7 +3,9 @@ export const playVoice = async (message: string) => {
     const res = await fetch("https://api.fpt.ai/hmi/tts/v5", {
       method: "POST",
       headers: {
-        "api-key": process.env.TEXT_TO_SPEECH_KEY || "JmoEolL3Is3UQk2uVTvQDlIWP3UByQfu",
+        "api-key":
+          process.env.TEXT_TO_SPEECH_KEY ||
+          "JmoEolL3Is3UQk2uVTvQDlIWP3UByQfu",
         speed: "-1",
         voice: "banmai",
         "Content-Type": "text/plain",
@@ -24,9 +26,8 @@ export const playVoice = async (message: string) => {
       return;
     }
 
-    // ✅ Thử kiểm tra HEAD (nếu không được, fallback chờ 3s)
     let ready = false;
-    const maxRetries = 6; // tổng thời gian thử: ~3s
+    const maxRetries = 6;
     for (let i = 0; i < maxRetries; i++) {
       try {
         const check = await fetch(audioUrl, { method: "HEAD" });
@@ -34,18 +35,15 @@ export const playVoice = async (message: string) => {
           ready = true;
           break;
         }
-      } catch (err) {
-        console.warn(`HEAD check thất bại lần ${i + 1}:`, err);
-      }
+      } catch {}
       await new Promise((r) => setTimeout(r, 1500));
     }
 
     if (!ready) {
-      console.warn("Không xác nhận được file có tồn tại qua HEAD, fallback chờ 3s...");
       await new Promise((r) => setTimeout(r, 3000));
     }
 
-    // ✅ Tạo audio và chờ sẵn sàng
+    const ting = new Audio("/tingting.mp3");
     const audio = new Audio(audioUrl);
     await new Promise<void>((resolve, reject) => {
       audio.oncanplaythrough = () => resolve();
@@ -53,6 +51,11 @@ export const playVoice = async (message: string) => {
         reject(new Error("Không thể tải file âm thanh hoặc bị chặn CORS"));
     });
 
+    await new Promise<void>((resolve) => {
+      ting.onended = () => resolve();
+      ting.onerror = () => resolve();
+      ting.play();
+    });
     await audio.play();
   } catch (err) {
     console.error("Lỗi khi phát âm thanh:", err);

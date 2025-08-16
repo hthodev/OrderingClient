@@ -19,6 +19,28 @@ export interface NewOrder_Socket {
   };
 }
 
+/** Badge nhỏ hiển thị Online/Offline + latency ms */
+function ConnectionBadge({
+  online,
+  latency,
+}: {
+  online: boolean;
+  latency: number | null;
+}) {
+  return (
+    <div className="fixed top-3 right-3 z-50">
+      <div
+        className={`px-3 py-1 rounded-full text-xs shadow ${
+          online ? "bg-green-600 text-white" : "bg-red-600 text-white"
+        }`}
+        title={latency != null ? `Latency ~ ${latency} ms` : "No response"}
+      >
+        {online ? `Online${latency != null ? ` • ${latency} ms` : ""}` : "Offline"}
+      </div>
+    </div>
+  );
+}
+
 function OrderItem({ food, order_id }: { food: Food; order_id?: string }) {
   const [done, setDone] = useState(food.isCooked || false);
   const isMultiple = food.quantity > 1;
@@ -121,6 +143,10 @@ export default function KitchenDashboard() {
   const [canPlayAudio, setCanPlayAudio] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(true);
 
+  // NEW: trạng thái socket & latency
+  const [online, setOnline] = useState<boolean>(socket.connected);
+  const [latency, setLatency] = useState<number | null>(null);
+
   const fetchTable = async () => {
     const tables = await TableService.tableWithFoodOrderForKitchen();
     setTables(tables);
@@ -132,12 +158,10 @@ export default function KitchenDashboard() {
     try {
       if ("wakeLock" in navigator) {
         wakeLock = await (navigator as any).wakeLock.request("screen");
-        console.log(
-          "\ud83d\udd0b \u0110\u00e3 gi\u1eef m\u00e0n h\u00ecnh lu\u00f4n s\u00e1ng"
-        );
+        console.log("🔋 Đã giữ màn hình luôn sáng");
 
         wakeLock?.addEventListener("release", () => {
-          console.log("\u23f8\ufe0f WakeLock b\u1ecb h\u1ee7y");
+          console.log("⏸️ WakeLock bị hủy");
         });
       } else {
         console.warn("Wake Lock API không được hỗ trợ trên trình duyệt này");
@@ -151,15 +175,14 @@ export default function KitchenDashboard() {
     fetchTable().finally(() => setIsLoading(false));
   }, []);
 
+  // Nhận đơn mới (giữ nguyên logic cũ)
   useEffect(() => {
     if (!canPlayAudio) return;
 
     const handleNewOrder = async (payload: NewOrder_Socket) => {
       await fetchTable();
       const messages = payload.data.foods.map((f) => `${f.quantity} ${f.name}`);
-      const fullText = `${messages.join(". ")} - Bàn ${
-        payload.data.table.name
-      }`;
+      const fullText = `${messages.join(". ")} - Bàn ${payload.data.table.name}`;
       await playVoice(fullText);
     };
 
@@ -169,6 +192,7 @@ export default function KitchenDashboard() {
     };
   }, [canPlayAudio]);
 
+  // WakeLock
   useEffect(() => {
     requestWakeLock();
 
@@ -185,14 +209,55 @@ export default function KitchenDashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    const onConnect = () => setOnline(true);
+    const onDisconnect = () => {
+      setOnline(false);
+      setLatency(null);
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    setOnline(socket.connected);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
+
+  useEffect(() => {
+    let intervalId: any;
+
+    const sendPing = () => {
+      const ts = Date.now();
+      const timeout = setTimeout(() => setLatency(null), 5000);
+
+      const onPong = (p: { ts: number; serverNow: number }) => {
+        clearTimeout(timeout);
+        setLatency(Date.now() - p.ts);
+      };
+
+      socket.once("PONG", onPong);
+      socket.emit("PING", { ts });
+    };
+
+    sendPing();
+    intervalId = setInterval(sendPing, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
+      {/* Badge trạng thái kết nối */}
+      <ConnectionBadge online={online} latency={latency} />
+
       {showIntroModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-lg shadow-lg max-w-xs p-6 text-center">
-            <h2 className="text-lg font-semibold">
-              Bắt đầu theo dõi đơn hàng mới
-            </h2>
+            <h2 className="text-lg font-semibold">Bắt đầu theo dõi đơn hàng mới</h2>
             <p className="text-sm text-gray-600 mt-2">
               Nhấn vào nút bên dưới để bật thông báo bằng âm thanh.
             </p>
@@ -204,7 +269,7 @@ export default function KitchenDashboard() {
                 toast.success("Đã bật âm thanh thông báo!");
               }}
             >
-              Bấm vào đây để bắt đầu theo dõi đơn hàng mới 🎧
+              Bấm vào để bật âm thanh 🎧
             </Button>
           </div>
         </div>
