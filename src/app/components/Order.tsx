@@ -35,15 +35,26 @@ export default function OrderForm({
   if (order?.foods?.length) {
     defaultItems.push(...order.foods.map((item) => ({ ...item, return: 0 })));
   } else {
-    defaultItems.push({
-      _id: FOOD.BANH_TRANG._id,
-      name: FOOD.BANH_TRANG.name,
-      quantity: 1,
-      price: FOOD.BANH_TRANG.price,
-      unit: FOOD.BANH_TRANG.unit,
-      return: 0,
-      category: FOOD.CATEGORY.BANH_TRANG,
-    });
+    defaultItems.push(
+      {
+        _id: FOOD.BANH_TRANG._id,
+        name: FOOD.BANH_TRANG.name,
+        quantity: 1,
+        price: FOOD.BANH_TRANG.price,
+        unit: FOOD.BANH_TRANG.unit,
+        return: 0,
+        category: FOOD.CATEGORY.BANH_TRANG,
+      },
+      {
+        _id: "68a116d46e8afff738598aab",
+        name: "Đậu phộng gói",
+        quantity: 1,
+        price: "15000",
+        unit: "cái",
+        return: 0,
+        category: FOOD.CATEGORY.BANH_TRANG,
+      }
+    );
   }
 
   const [items, setItems] = useState<Food[]>(defaultItems);

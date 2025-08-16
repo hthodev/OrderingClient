@@ -29,6 +29,13 @@ export default function BillPrint({ isViewFromCpn = false }) {
     setIsLoading(false);
   }, []);
 
+  function formatPrice(value: number): string {
+    if (value >= 1000) {
+      return (value / 1000).toFixed(0) + "K";
+    }
+    return value.toString();
+  }
+
   if (isLoading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -42,25 +49,27 @@ export default function BillPrint({ isViewFromCpn = false }) {
 
   return (
     // ⚠️ dùng print-safe để tắt flex khi in (tránh trang trắng)
-    <div className={`print-safe flex items-center justify-center bg-white px-4`}>
+    <div
+      className={`print-safe flex items-center justify-center bg-white px-4`}
+    >
       <div
         className={`bill-print mx-auto ${
-          !isViewFromCpn ? "text-[45px]" : "text-[13px]"
+          !isViewFromCpn ? "text-[70px]" : "text-[13px]"
         } font-[monospace] text-black p-4 border border-black`}
       >
         {/* Header */}
         <div className="text-center font-bold">
           <div
             className={`${
-              !isViewFromCpn ? "text-[50px] mt-6" : "text-[16px]"
+              !isViewFromCpn ? "text-[60px] mt-6" : "text-[16px]"
             } uppercase`}
           >
             Quán nhậu Mỹ Tiên
           </div>
-          <div className={`${!isViewFromCpn ? "text-[25px]" : "text-[16px]"}`}>
+          <div className={`${!isViewFromCpn ? "text-[40px]" : "text-[16px]"}`}>
             ĐC: Duy Thành - Duy Xuyên - Quảng Nam
           </div>
-          <div className={`${!isViewFromCpn ? "text-[25px]" : "text-[16px]"}`}>
+          <div className={`${!isViewFromCpn ? "text-[40px]" : "text-[16px]"}`}>
             ĐT: 07-6666-1056
           </div>
         </div>
@@ -68,7 +77,7 @@ export default function BillPrint({ isViewFromCpn = false }) {
         <div className="text-center my-2 font-bold">
           <div
             className={`${
-              !isViewFromCpn ? "text-[50px]" : "text-[16px]"
+              !isViewFromCpn ? "text-[70px]" : "text-[16px]"
             } uppercase underline`}
           >
             HÓA ĐƠN
@@ -77,7 +86,7 @@ export default function BillPrint({ isViewFromCpn = false }) {
 
         <div
           className={`flex justify-between ${
-            !isViewFromCpn ? "text-[25px]" : "text-sm"
+            !isViewFromCpn ? "text-[40px]" : "text-sm"
           }`}
         >
           <div>Ngày: {paymentTime || new Date().toLocaleString()}</div>
@@ -85,26 +94,31 @@ export default function BillPrint({ isViewFromCpn = false }) {
         </div>
 
         {/* Table */}
-        <table className="w-full border border-black border-collapse my-2">
+        <table className="w-full border-3 border-black border-collapse my-2">
           <thead>
-            <tr className="border-b border-black">
-              <th className="border-r border-black">Tên hàng</th>
-              <th className="border-r border-black w-10">SL</th>
-              <th className="border-r border-black">Đơn giá</th>
-              <th className="border-r border-black">Thành tiền</th>
+            <tr className="border-b-3 border-black">
+              <th className="border-r-3 border-black min-w-2/3">Tên hàng</th>
+              <th className="border-r-3 border-black w-10">SL</th>
+              <th className="border-r-3 border-black">Đơn giá</th>
+              <th className="border-r-3 border-black">Thành tiền</th>
             </tr>
           </thead>
           <tbody>
             {billData?.bills?.map((item: any) => (
-              <tr key={item._id} className="border-b border-solid border-black">
-                <td className="border-r border-black px-1">{item.name}</td>
-                <td className="border-r border-black text-center">
+              <tr
+                key={item._id}
+                className="border-b-3 border-solid border-black"
+              >
+                <td className="border-r-3 border-black px-1 min-w-2/3">
+                  {item.name}
+                </td>
+                <td className="border-r-3 border-black text-center">
                   {item.quantity}
                 </td>
-                <td className="border-r border-black text-right pr-1">
-                  {item.price.toLocaleString()}
+                <td className="border-r-3 border-black text-right pr-1">
+                  {formatPrice(item.price)}
                 </td>
-                <td className="text-right pr-1">{item.total.toLocaleString()}</td>
+                <td className="text-right dddpr-1">{formatPrice(item.total)}</td>
               </tr>
             ))}
           </tbody>
@@ -116,11 +130,13 @@ export default function BillPrint({ isViewFromCpn = false }) {
         {/* Summary */}
         <div className="bill-summary">
           <div className="text-right font-semibold">
-            <div className="mb-1">
+            {/* <div className="mb-1">
               Tổng tiền hàng: {billData?.totalBill?.toLocaleString()}đ
             </div>
-            <div className="mb-1">Chiết khấu: 0%</div>
-            <div className={`${!isViewFromCpn ? "text-[50px]" : "text-[15px]"}`}>
+            <div className="mb-1">Chiết khấu: 0%</div> */}
+            <div
+              className={`${!isViewFromCpn ? "text-[70px]" : "text-[15px]"}`}
+            >
               Tổng cộng: {billData?.totalBill?.toLocaleString()}đ
             </div>
           </div>

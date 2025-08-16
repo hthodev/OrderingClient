@@ -98,7 +98,7 @@ export default function InvoiceManagement() {
     const fetchAPI = async () => {
       try {
         const [res1, res2] = await Promise.all([
-          ManagerService.InvoicesByDate(day.toISOString()),
+          ManagerService.InvoicesByDate(fmtDate(day)),
           TableService.TablesName(),
         ]);
 
@@ -113,7 +113,7 @@ export default function InvoiceManagement() {
     fetchAPI();
   }, [day]);
 
-  const totalSum = useMemo(() => invoices.reduce((s, i) => s + i.total, 0), []);
+  const totalSum = useMemo(() => invoices.reduce((s, i) => s + i.total, 0), [invoices]);
 
   // Handlers
   const prevDay = () => setDay((d) => addDays(d, -1));
