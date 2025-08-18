@@ -145,4 +145,24 @@ export default class FoodService {
       }
     });
   }
+
+  static async UpdateFoodPrices(
+    _id: string,
+    foods: Food[]
+  ): Promise<CheckInvoice> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await apiRequest.put(`/orders/updateFoodPrices/${_id}`, {
+          foods,
+        });
+        if (result?.statusCode === 200) {
+          return resolve(result);
+        } else {
+          return reject(result);
+        }
+      } catch (error: any) {
+        return reject(error);
+      }
+    });
+  }
 }
