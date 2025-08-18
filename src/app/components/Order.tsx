@@ -200,7 +200,7 @@ export default function OrderForm({
               <BillPrint isViewFromCpn={true} />
               <div className="flex justify-end space-x-4 px-3 pb-3 mt-2">
                 <Button
-                  onClick={() => router.push("/bill")}
+                  onClick={() => window.open("/bill", "_blank")}
                   className="bg-green-600 hover:bg-green-700"
                 >
                   In hóa đơn
@@ -302,9 +302,8 @@ export default function OrderForm({
                     handleChange(index, "quantity", e.target.value)
                   }
                   disabled={checkout || watchOrder}
-                  className={`!py-1.5 ${
-                    (checkout || watchOrder) && "bg-[#edecec]"
-                  }`}
+                  className={`!py-1.5 ${(checkout || watchOrder) && "bg-[#edecec]"
+                    }`}
                 />
                 {!checkout &&
                   !order?.foods?.some((f) => f._id === item._id) && (
@@ -400,6 +399,14 @@ export default function OrderForm({
                   setModalContent(
                     <div>
                       <BillPrint isViewFromCpn={true} />
+                      <div className="flex justify-end space-x-4 px-3 pb-3 mt-2">
+                        <Button
+                          onClick={() => window.open("/bill", "_blank")}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          In hóa đơn
+                        </Button>
+                      </div>
                     </div>
                   );
                   setModalOpen(true);
