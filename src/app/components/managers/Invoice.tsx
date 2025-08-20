@@ -136,6 +136,14 @@ export default function InvoiceManagement() {
       setModalContent(
         <div>
           <BillPrint isViewFromCpn={true} />
+          <div className="flex justify-end space-x-4 px-3 pb-3 mt-2">
+            <Button
+              onClick={() => window.open("/bill", "_blank")}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              In hóa đơn
+            </Button>
+          </div>
         </div>
       );
       setModalOpen(true);

@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "rm -rf .next .next.tar.gz && npm run build && tar -czf .next.tar.gz .next",
-    "import": "tar -xzf .next.tar.gz"
+    "import": "tar -xzf .next.tar.gz && npm run start",
+    "export": "rm -rf .next .next.tar.gz && npm run build && tar -czf .next.tar.gz .next'"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.5",
@@ -45,6 +45,6 @@
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
-    "typescript": "^5"
+    "typescript": "5.9.2"
   }
 }

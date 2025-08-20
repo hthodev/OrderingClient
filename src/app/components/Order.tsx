@@ -17,8 +17,11 @@ export default function OrderForm({
   foods,
   table,
   order,
+  newOrder = false,
   checkout = false,
   watchOrder = false,
+  changePrice = false,
+  moreOrder = false,
   toast,
   onClose,
 }: {
@@ -26,7 +29,10 @@ export default function OrderForm({
   table: FullTable;
   order?: Order;
   checkout?: boolean;
+  newOrder?: boolean;
   watchOrder?: boolean;
+  changePrice?: boolean;
+  moreOrder?: boolean;
   toast?: any;
   onClose: ({ closeModal }: { closeModal: boolean }) => {};
 }) {
@@ -67,7 +73,11 @@ export default function OrderForm({
 
   const handleChange = (index: number, field: string, value: any) => {
     const updated: any[] = [...items];
-    updated[index][field] = +value;
+    if (field === "price") {
+      updated[index][field] = value;
+    } else {
+      updated[index][field] = +value;
+    }
     setItems(updated);
   };
 
@@ -131,7 +141,7 @@ export default function OrderForm({
     const handleOrder = async () => {
       try {
         // Logic này là phần cho order thêm
-        if (!checkout && order?.orderer?.length) {
+        if (moreOrder) {
           if (table?.order?._id) {
             await FoodService.OrderMore(
               table.order._id,
@@ -149,7 +159,7 @@ export default function OrderForm({
           } else {
             throw Error();
           }
-        } else {
+        } else if (newOrder) {
           // ngược lại là order mới
           await FoodService.Order(
             items
@@ -162,6 +172,20 @@ export default function OrderForm({
           );
           toast.success("Order thành công!");
           onClose({ closeModal: true });
+        } else if (changePrice) {
+          if (table?.order?._id) {
+            await FoodService.UpdateFoodPrices(
+              table.order._id,
+              items
+                .map((item) => ({
+                  ...item,
+                  price: +item.price,
+                }))
+                .filter((item) => item.name)
+            );
+          }
+          toast.success("Đã thay đổi giá món thành công!");
+          onClose({ closeModal: false });
         }
       } catch (error: any) {
         alert("Có lỗi xảy ra khi gửi đơn hàng.");
@@ -200,7 +224,7 @@ export default function OrderForm({
               <BillPrint isViewFromCpn={true} />
               <div className="flex justify-end space-x-4 px-3 pb-3 mt-2">
                 <Button
-                  onClick={() => router.push("/bill")}
+                  onClick={() => window.open("/bill", "_blank")}
                   className="bg-green-600 hover:bg-green-700"
                 >
                   In hóa đơn
@@ -321,7 +345,16 @@ export default function OrderForm({
                 NV order:{" "}
                 {[...new Set(item?.user?.map((u: any) => u.name))].join(", ")}
               </div>
-              <div>Giá: {item.price.toLocaleString()} đ</div>
+              {!changePrice ? (
+                <div>Giá: {item.price.toLocaleString()} đ</div>
+              ) : (
+                <input
+                  type="text"
+                  value={item.price === 0 ? "" : item.price}
+                  onChange={(e) => handleChange(index, "price", e.target.value)}
+                  className="w-20 border-b border-gray-400 focus:outline-none focus:border-green-600 text-sm text-right bg-transparent"
+                />
+              )}
             </div>
 
             {checkout && (
@@ -400,6 +433,14 @@ export default function OrderForm({
                   setModalContent(
                     <div>
                       <BillPrint isViewFromCpn={true} />
+                      <div className="flex justify-end space-x-4 px-3 pb-3 mt-2">
+                        <Button
+                          onClick={() => window.open("/bill", "_blank")}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          In hóa đơn
+                        </Button>
+                      </div>
                     </div>
                   );
                   setModalOpen(true);

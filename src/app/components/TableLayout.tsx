@@ -88,6 +88,7 @@ export default function TableLayout() {
             table={table}
             onClose={handleOnClose}
             toast={toast}
+            newOrder={true}
           />
         );
         setModalOpen(true);
@@ -99,6 +100,7 @@ export default function TableLayout() {
             foods={foods}
             table={table}
             order={table.order}
+            moreOrder={true}
             checkout={false}
             onClose={handleOnClose}
             toast={toast}
@@ -150,6 +152,22 @@ export default function TableLayout() {
           alert("Có lỗi xảy ra khi gửi đơn hàng.");
           console.error(error);
         }
+        break;
+      case "changePrice":
+        setModalTitle(`Thay đổi giá món ăn - Bàn ${table.name}`);
+        setModalContent(
+          <OrderForm
+            foods={foods}
+            table={table}
+            order={table.order}
+            checkout={false}
+            changePrice={true}
+            toast={toast}
+            onClose={handleOnClose}
+
+          />
+        );
+        setModalOpen(true);
         break;
     }
   };
@@ -236,11 +254,16 @@ export default function TableLayout() {
                         />
 
                         <MenuItem
+                          label="Thay đổi giá món"
+                          onClick={() => handleSelect(table, "changePrice")}
+                        />
+
+                        <MenuItem
                           label="Xem món đã order"
                           onClick={() => handleSelect(table, "checkOrder")}
                         />
                         <MenuItem
-                          label="Đánh dấu đã tính tiền"
+                          label={`Bàn ${table.name} đã tính tiền`}
                           onClick={() => handleSelect(table, "done")}
                         />
                       </>
