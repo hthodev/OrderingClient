@@ -1,6 +1,7 @@
 "use client";
 import ManagerService, {
   ChartItem,
+  ReportCategory,
   TopFoodChartItem,
 } from "@/app/services/manager";
 import { useEffect, useMemo, useState } from "react";
@@ -22,6 +23,8 @@ import Loading from "../Loading";
 import Manager from "./Manager";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
 const COLORS = [
   "#8884d8",
@@ -46,6 +49,33 @@ const COLORS = [
   "#d8b384",
 ];
 
+interface ReportCategoryVi {
+  "Đồ ăn": { totalRevenue: number; totalQuantity: number };
+  Bia: { totalRevenue: number; totalQuantity: number };
+  Nước: { totalRevenue: number; totalQuantity: number };
+  Rượu: { totalRevenue: number; totalQuantity: number };
+}
+
+const toISO = (d: Date) => {
+  const local = new Date(d);
+  const utc7 = new Date(local.getTime() + 7 * 60 * 60 * 1000);
+  return utc7.toISOString();
+};
+
+const fmtDate = (d: Date) => format(d, "dd/MM/yyyy", { locale: vi });
+const DAY_OFFSETS: Record<
+  "T2" | "T3" | "T4" | "T5" | "T6" | "T7" | "CN",
+  number
+> = {
+  T2: 0,
+  T3: 1,
+  T4: 2,
+  T5: 3,
+  T6: 4,
+  T7: 5,
+  CN: 6,
+};
+
 export default function ReportManagement() {
   const [filter, setFilter] = useState<"week" | "month" | "year">("week");
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
@@ -53,13 +83,9 @@ export default function ReportManagement() {
   const [topFoods, setTopFoods] = useState<TopFoodChartItem[]>();
   const [topBeers, setTopBeers] = useState<TopFoodChartItem[]>();
   const [isLoading, setIsLoading] = useState(true);
+  const [dateReport, setDateReport] = useState(new Date());
+  const [reportByCategory, setReportByCategory] = useState<ReportCategoryVi>();
   const isMobile = useIsMobile();
-
-  const toISO = (d: Date) => {
-    const local = new Date(d);
-    const utc7 = new Date(local.getTime() + 7 * 60 * 60 * 1000);
-    return utc7.toISOString();
-  };
   const fmtInput = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
       d.getDate()
@@ -118,6 +144,24 @@ export default function ReportManagement() {
     fetchCharts();
   }, [filter, anchorDate]);
 
+  useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const [report] = await Promise.all([
+          ManagerService.ReportByCategory(toISO(dateReport)),
+        ]);
+        delete (report as any).statusCode;
+        setReportByCategory({
+          "Đồ ăn": report.food,
+          Bia: report.beer,
+          Nước: report.water,
+          Rượu: report.alcohol,
+        });
+      } catch {}
+    };
+    fetchReport();
+  }, [dateReport]);
+
   const CustomTooltip = ({ active, payload, label }: any) =>
     active && payload?.length ? (
       <div className="bg-white/95 border border-gray-200 px-3 py-2 rounded-xl shadow text-sm">
@@ -132,6 +176,16 @@ export default function ReportManagement() {
     revenue?.reduce((a, c) => a + c.total, 0) || 0
   ).toLocaleString("vi-VN");
 
+  function labelToDateInWeek(
+    anchorDate: Date,
+    label: keyof typeof DAY_OFFSETS
+  ): Date {
+    const { start } = startEndOfWeek(anchorDate);
+    const d = new Date(start);
+    d.setDate(start.getDate() + DAY_OFFSETS[label]);
+    return d;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -141,9 +195,9 @@ export default function ReportManagement() {
   }
 
   return (
-    <div className="flex flex-1 w-full">
+    <div className="flex">
       <Manager />
-      <section className="mt-14 p-4">
+      <section className="mt-14 p-4 flex w-full items-center justify-center">
         {/* Header */}
         <div className="max-w-5xl mx-auto">
           <h1 className="text-2xl font-bold mb-1">📊 Báo cáo doanh số</h1>
@@ -190,7 +244,10 @@ export default function ReportManagement() {
                 </IconBtn>
               </div>
               <button
-                onClick={() => setAnchorDate(new Date())}
+                onClick={() => {
+                  setAnchorDate(new Date());
+                  setDateReport(new Date());
+                }}
                 className="h-12 px-3 rounded-xl border border-gray-200 bg-white text-sm hover:bg-gray-50"
               >
                 Hôm nay
@@ -236,6 +293,20 @@ export default function ReportManagement() {
                       fill="#8876f0"
                       barSize={26}
                       radius={[10, 10, 0, 0]}
+                      onClick={(barData: any) => {
+                        if (["month", "year"].includes(filter)) {
+                          setDateReport(new Date());
+                          return;
+                        }
+                        const label = barData?.payload?.label;
+                        if (!label) return;
+
+                        const clickedDate = labelToDateInWeek(
+                          anchorDate,
+                          label
+                        );
+                        setDateReport(clickedDate);
+                      }}
                     >
                       <LabelList
                         dataKey="total"
@@ -249,8 +320,55 @@ export default function ReportManagement() {
               </div>
             </div>
 
+            <div className="md:col-span-2 p-4 rounded-4xl shadow bg-white">
+              <div className="font-semibold mb-2">
+                Báo cáo theo danh mục ({fmtDate(dateReport)})
+              </div>
+              <table className="w-full text-sm border border-gray-300 rounded">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left p-2">Danh mục</th>
+                    <th className="text-right p-2">Số lượng</th>
+                    <th className="text-right p-2">Doanh số</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportByCategory &&
+                    Object.keys(reportByCategory).map((category) => (
+                      <tr key={category} className="border-t">
+                        <td className="p-2">{category}</td>
+                        <td className="p-2 text-right">
+                          {(reportByCategory as any)[category]?.totalQuantity}
+                        </td>
+                        <td className="p-2 text-right">{`${(
+                          reportByCategory as any
+                        )[category]?.totalRevenue?.toLocaleString()}`}</td>
+                      </tr>
+                    ))}
+                  <tr className="border-t font-semibold">
+                    <td className="p-2">Tổng</td>
+                    <td className="p-2 text-right">
+                      {!reportByCategory
+                        ? 0
+                        : Object.values(reportByCategory).reduce(
+                            (acc, cur) => acc + cur.totalQuantity,
+                            0
+                          )}
+                    </td>
+                    <td className="p-2 text-right">
+                      {!reportByCategory
+                        ? 0
+                        : Object.values(reportByCategory)
+                            .reduce((acc, cur) => acc + cur.totalRevenue, 0)
+                            .toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
             {/* Top lists */}
-            <div className="md:col-span-2 space-y-4">
+            <div className="md:col-span-3 space-y-4">
               <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-3 md:p-4">
                 <h3 className="font-semibold mb-2">
                   Top bia được order nhiều nhất
@@ -281,7 +399,9 @@ export default function ReportManagement() {
                   </ResponsiveContainer>
                 </div>
               </div>
+            </div>
 
+            <div className="md:col-span-2 space-y-4">
               <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-3 md:p-4">
                 <h3 className="font-semibold mb-3">Top món ăn theo số lượng</h3>
                 <ul className="max-h-64 overflow-y-auto space-y-2 pr-1">

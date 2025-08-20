@@ -15,7 +15,8 @@ export default class FOOD {
     BINH_DAN: "Món bình dân",
     THUC_PHAM_THEM: "Thực phẩm thêm",
     NUOC: "Nước",
-    BANH_TRANG: "Bánh tráng"
+    BANH_TRANG: "Bánh tráng",
+    RUOU: "Rượu"
   } as const;
 
   static readonly UNIT = {
@@ -25,6 +26,7 @@ export default class FOOD {
     NOI: "nồi",
     CON: "con",
     O: "ổ",
+    CAI: "cái"
   }
 }
 

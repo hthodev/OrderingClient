@@ -66,6 +66,25 @@ export interface Users {
   itsMe?: boolean;
 }
 
+export interface ReportCategory {
+  food: {
+    totalRevenue: number;
+    totalQuantity: number;
+  };
+  beer: {
+    totalRevenue: number;
+    totalQuantity: number;
+  };
+  water: {
+    totalRevenue: number;
+    totalQuantity: number;
+  };
+  alcohol: {
+    totalRevenue: number;
+    totalQuantity: number;
+  };
+}
+
 export default class ManagerService {
   static async OrdersByTimeRange(
     date: string,
@@ -169,10 +188,29 @@ export default class ManagerService {
     });
   }
 
-  static async Accounts(position: string, search:string): Promise<Users[]> {
+  static async Accounts(position: string, search: string): Promise<Users[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await apiRequest.get(`/manager/users/accounts?position=${position}&search=${search}`);
+        const result = await apiRequest.get(
+          `/manager/users/accounts?position=${position}&search=${search}`
+        );
+        if (result?.statusCode === 200) {
+          return resolve(result);
+        } else {
+          return reject(result);
+        }
+      } catch (error: any) {
+        return reject(error);
+      }
+    });
+  }
+
+  static async ReportByCategory(date: string): Promise<ReportCategory> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await apiRequest.get(
+          `/manager/reportByCategory?date=${date}`
+        );
         if (result?.statusCode === 200) {
           return resolve(result);
         } else {
