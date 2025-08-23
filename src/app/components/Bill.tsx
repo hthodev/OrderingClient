@@ -8,6 +8,7 @@ import { vi } from "date-fns/locale";
 
 const fmtDate = (d: Date) => format(d, "dd/MM/yyyy", { locale: vi });
 const fmtTime = (d: Date) => format(d, "HH:mm", { locale: vi });
+const money = (n?: number) => (n ?? 0).toLocaleString("vi-VN");
 
 export default function BillPrint({ isViewFromCpn = false }) {
   const [billData, setBillData] = useState<CheckInvoice>();
@@ -29,115 +30,89 @@ export default function BillPrint({ isViewFromCpn = false }) {
     setIsLoading(false);
   }, []);
 
-  function formatPrice(value: number): string {
-    if (value >= 1000) {
-      return (value / 1000).toFixed(0) + "K";
-    }
-    return value.toString();
-  }
-
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white px-4">
         <div className="w-full max-w-sm">
-          <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center z-20">
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-20">
             <Loading />
           </div>
         </div>
       </div>
     );
+  }
+  const previewScale = !isViewFromCpn ? "scale-[1.9]" : "scale-100";
 
   return (
-    // ⚠️ dùng print-safe để tắt flex khi in (tránh trang trắng)
-    <div
-      className={`print-safe flex items-center justify-center bg-white px-4`}
-    >
-      <div
-        className={`bill-print mx-auto ${
-          !isViewFromCpn ? "text-[70px]" : "text-[13px]"
-        } font-[monospace] text-black p-4 border border-black`}
-      >
-        {/* Header */}
-        <div className="text-center font-bold">
-          <div
-            className={`${
-              !isViewFromCpn ? "text-[60px] mt-6" : "text-[16px]"
-            } uppercase`}
-          >
-            Quán nhậu Mỹ Tiên
-          </div>
-          <div className={`${!isViewFromCpn ? "text-[40px]" : "text-[16px]"}`}>
-            ĐC: Duy Thành - Duy Xuyên - Quảng Nam
-          </div>
-          <div className={`${!isViewFromCpn ? "text-[40px]" : "text-[16px]"}`}>
-            ĐT: 07-6666-1056
-          </div>
-        </div>
-
-        <div className="text-center my-2 font-bold">
-          <div
-            className={`${
-              !isViewFromCpn ? "text-[70px]" : "text-[16px]"
-            } uppercase underline`}
-          >
-            HÓA ĐƠN
-          </div>
-        </div>
-
-        <div
-          className={`flex justify-between ${
-            !isViewFromCpn ? "text-[40px]" : "text-sm"
-          }`}
-        >
-          <div>Ngày: {paymentTime || new Date().toLocaleString()}</div>
-          <div>Bàn: {billData?.tableName}</div>
-        </div>
-
-        {/* Table */}
-        <table className="w-full border-3 border-black border-collapse my-2">
-          <thead>
-            <tr className="border-b-3 border-black">
-              <th className="border-r-3 border-black min-w-2/3">Tên hàng</th>
-              <th className="border-r-3 border-black w-10">SL</th>
-              <th className="border-r-3 border-black">Đơn giá</th>
-              <th className="border-r-3 border-black">Thành tiền</th>
-            </tr>
-          </thead>
-          <tbody>
-            {billData?.bills?.map((item: any) => (
-              <tr
-                key={item._id}
-                className="border-b-3 border-solid border-black"
-              >
-                <td className="border-r-3 border-black px-1 min-w-2/3">
-                  {item.name}
-                </td>
-                <td className="border-r-3 border-black text-center">
-                  {item.quantity}
-                </td>
-                <td className="border-r-3 border-black text-right pr-1">
-                  {formatPrice(item.price)}
-                </td>
-                <td className="text-right dddpr-1">{formatPrice(item.total)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Ngắt trang sau bảng, trước tổng kết */}
-        <div className="page-break" />
-
-        {/* Summary */}
-        <div className="bill-summary">
-          <div className="text-right font-semibold">
-            {/* <div className="mb-1">
-              Tổng tiền hàng: {billData?.totalBill?.toLocaleString()}đ
+    <div className="bg-white flex justify-center py-6 print:py-0 font-[monospace]">
+      <div className={`origin-top ${previewScale} print:scale-[3.9]`}>
+        <div className="w-[58mm] bg-white text-gray-900 font-sans text-[12px] leading-tight print:shadow-none print:m-0 print:p-0">
+          <div className="text-center px-3 pt-3">
+            <div className="text-[20px] font-semibold">Quán nhậu Mỹ Tiên</div>
+            <div className="text-[13px]">
+              ĐC: Duy Thành - Duy Xuyên - Quảng Nam
             </div>
-            <div className="mb-1">Chiết khấu: 0%</div> */}
-            <div
-              className={`${!isViewFromCpn ? "text-[70px]" : "text-[15px]"}`}
-            >
-              Tổng cộng: {billData?.totalBill?.toLocaleString()}đ
+            <div className="text-[13px]">ĐT: 07-6666-1056</div>
+          </div>
+
+          <div className="px-3 mt-2 text-center">
+            <div className="font-extrabold uppercase text-[15px]">
+              HÓA ĐƠN BÁN HÀNG
+            </div>
+            <div className="text-[13px] mt-1">
+              {paymentTime || `${fmtDate(new Date())} ${fmtTime(new Date())}`}
+            </div>
+          </div>
+
+          <div className="px-3 mt-2 text-[13px]">
+            <div className="flex justify-between">
+              <span>
+                Bàn: <b>{billData?.tableName || "-"}</b>
+              </span>
+            </div>
+          </div>
+
+          <div className="px-3 mt-2">
+            <div className="border-t border-dashed border-gray-700" />
+            <div className="flex items-baseline pt-1 text-[15px] font-semibold uppercase">
+              <div className="basis-[30%] grow text-right pr-1">Giá</div>
+              <div className="basis-[20%] shrink-0 text-center">SL</div>
+              <div className="basis-[50%] grow text-right">Thành tiền</div>
+            </div>
+            <div className="border-t border-dashed border-gray-300 mt-1" />
+
+            {billData?.bills?.map((item: any) => (
+              <div key={item._id} className="py-1">
+                <div className="text-[23px] font-bold leading-snug break-words">
+                  {item.name}
+                </div>
+
+                <div className="flex items-baseline mt-0.5 text-[20px]">
+                  <div className="basis-[40%] grow text-right pr-1">
+                    {(item.price ?? 0).toLocaleString("vi-VN")}
+                  </div>
+                  <div className="basis-[20%] shrink-0 text-center">
+                    {item.quantity}
+                  </div>
+                  <div className="basis-[40%] grow text-right">
+                    {(item.total ?? 0).toLocaleString("vi-VN")}
+                  </div>
+                </div>
+
+                <div className="border-b border-dashed border-gray-300 mt-1" />
+              </div>
+            ))}
+          </div>
+
+          <div className="px-3 mt-2">
+            <div className="border-t border-dashed border-gray-700" />
+            <div className="mt-2 space-y-1 text-[20px]">
+              <div className="flex justify-between text-[20px]">
+                <span className="font-semibold">Tổng: </span>
+                <span className="font-extrabold">
+                  {money(billData?.totalBill)} đ
+                </span>
+              </div>
             </div>
           </div>
         </div>
