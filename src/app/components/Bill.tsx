@@ -41,11 +41,11 @@ export default function BillPrint({ isViewFromCpn = false }) {
       </div>
     );
   }
-  const previewScale = !isViewFromCpn ? "scale-[1.9]" : "scale-100";
+  const previewScale = !isViewFromCpn ? "scale-[4.5]" : "scale-100";
 
   return (
     <div className="bg-white flex justify-center py-6 print:py-0 font-[monospace]">
-      <div className={`origin-top ${previewScale} print:scale-[3.9]`}>
+      <div className={`origin-top ${previewScale}`}>
         <div className="w-[58mm] bg-white text-gray-900 font-sans text-[12px] leading-tight print:shadow-none print:m-0 print:p-0">
           <div className="text-center px-3 pt-3">
             <div className="text-[20px] font-semibold">Quán nhậu Mỹ Tiên</div>
@@ -104,7 +104,7 @@ export default function BillPrint({ isViewFromCpn = false }) {
             ))}
           </div>
 
-          <div className="px-3 mt-2">
+          <div className="page-break-before px-3 mt-2">
             <div className="border-t border-dashed border-gray-700" />
             <div className="mt-2 space-y-1 text-[20px]">
               <div className="flex justify-between text-[20px]">
