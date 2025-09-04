@@ -20,7 +20,6 @@ export default function TableLayout() {
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
   const [modalTitle, setModalTitle] = useState("");
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
-  const [foods, setFoods] = useState<Food[]>([]);
   const [officialTables, setOfficialTables] = useState<string[][]>([]);
   const [extendedTables, setExtendedTables] = useState<string[][]>([]);
   const [fullTables, setFullTables] = useState<FullTable[]>([]);
@@ -36,9 +35,9 @@ export default function TableLayout() {
 
       layouts.forEach((layout) => {
         if (layout.type == TABLE.TYPE.OFFICIAL) {
-          setOfficialTables(layout.layouts);
+          setOfficialTables([...layout.layouts]);
         } else {
-          setExtendedTables(layout.layouts);
+          setExtendedTables([...layout.layouts]);
         }
       });
 
@@ -49,16 +48,7 @@ export default function TableLayout() {
     }
   };
   useEffect(() => {
-    const fetchFood = async () => {
-      try {
-        const response = await FoodService.List("", {});
-        setFoods(response);
-      } catch (error) {}
-    };
-
     fetchTableLayout();
-    fetchFood();
-
     socket.on(SOCKET_GATEWAY.KEY.UPDATE_TABLE, () => {
       fetchTableLayout();
     });
@@ -84,7 +74,6 @@ export default function TableLayout() {
         setModalTitle(`Order món - Bàn ${table.name}`);
         setModalContent(
           <OrderForm
-            foods={foods}
             table={table}
             onClose={handleOnClose}
             toast={toast}
@@ -97,9 +86,7 @@ export default function TableLayout() {
         setModalTitle(`Order thêm - Bàn ${table.name}`);
         setModalContent(
           <OrderForm
-            foods={foods}
             table={table}
-            order={table.order}
             moreOrder={true}
             checkout={false}
             onClose={handleOnClose}
@@ -112,9 +99,7 @@ export default function TableLayout() {
         setModalTitle(`Xem bill, Tính tiền - Bàn ${table.name}`);
         setModalContent(
           <OrderForm
-            foods={foods}
             table={table}
-            order={table.order}
             checkout={true}
             onClose={handleOnClose}
             toast={toast}
@@ -126,9 +111,7 @@ export default function TableLayout() {
         setModalTitle(`Xem các món đã order - Bàn ${table.name}`);
         setModalContent(
           <OrderForm
-            foods={foods}
             table={table}
-            order={table.order}
             checkout={false}
             watchOrder={true}
             onClose={() => setModalOpen}
@@ -157,14 +140,11 @@ export default function TableLayout() {
         setModalTitle(`Thay đổi giá món ăn - Bàn ${table.name}`);
         setModalContent(
           <OrderForm
-            foods={foods}
             table={table}
-            order={table.order}
             checkout={false}
             changePrice={true}
             toast={toast}
             onClose={handleOnClose}
-
           />
         );
         setModalOpen(true);
@@ -323,7 +303,7 @@ export default function TableLayout() {
 
       <Modal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => handleOnClose({ closeModal: true })}
         title={modalTitle}
       >
         {modalContent}

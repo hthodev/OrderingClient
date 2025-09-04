@@ -27,6 +27,7 @@ export interface Order {
   createdAt: Date;
   _id: string;
   foods: Food[];
+  total?: number;
 }
 
 export interface CheckInvoice {
@@ -155,6 +156,23 @@ export default class FoodService {
         const result = await apiRequest.put(`/orders/updateFoodPrices/${_id}`, {
           foods,
         });
+        if (result?.statusCode === 200) {
+          return resolve(result);
+        } else {
+          return reject(result);
+        }
+      } catch (error: any) {
+        return reject(error);
+      }
+    });
+  }
+
+  static async GetOrder(table_id: string): Promise<Order> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await apiRequest.get(
+          `/orders/order?_id=${table_id}`
+        );
         if (result?.statusCode === 200) {
           return resolve(result);
         } else {

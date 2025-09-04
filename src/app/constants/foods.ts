@@ -8,6 +8,13 @@ export default class FOOD {
     unit: "cái",
   } as const;
 
+  static readonly DAU_PHONG_GOI = {
+    _id: "68a116d46e8afff738598aab",
+    name: "Đậu phộng gói",
+    price: 15000,
+    unit: "cái",
+  } as const;
+
   static readonly CATEGORY = {
     BIA: "Bia",
     KHAI_VI: "Món khai vị",
@@ -16,7 +23,8 @@ export default class FOOD {
     THUC_PHAM_THEM: "Thực phẩm thêm",
     NUOC: "Nước",
     BANH_TRANG: "Bánh tráng",
-    RUOU: "Rượu"
+    RUOU: "Rượu",
+    CAI: "Cái"
   } as const;
 
   static readonly UNIT = {

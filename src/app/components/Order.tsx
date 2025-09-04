@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
@@ -12,11 +12,12 @@ import LocalStorage from "../helpers/localstorage";
 import { useRouter } from "next/navigation";
 import Modal from "./Modal";
 import { useConfirm } from "./shared/ConfirmProvider";
+import socket from "../lib/socket-io";
+import SOCKET_GATEWAY from "../constants/socket";
+import Loading from "./Loading";
 
 export default function OrderForm({
-  foods,
   table,
-  order,
   newOrder = false,
   checkout = false,
   watchOrder = false,
@@ -25,9 +26,7 @@ export default function OrderForm({
   toast,
   onClose,
 }: {
-  foods: Food[];
   table: FullTable;
-  order?: Order;
   checkout?: boolean;
   newOrder?: boolean;
   watchOrder?: boolean;
@@ -36,12 +35,8 @@ export default function OrderForm({
   toast?: any;
   onClose: ({ closeModal }: { closeModal: boolean }) => {};
 }) {
-  const defaultItems: any[] = [];
-
-  if (order?.foods?.length) {
-    defaultItems.push(...order.foods.map((item) => ({ ...item, return: 0 })));
-  } else {
-    defaultItems.push(
+  const defaultItems = useMemo(
+    () => [
       {
         _id: FOOD.BANH_TRANG._id,
         name: FOOD.BANH_TRANG.name,
@@ -52,24 +47,53 @@ export default function OrderForm({
         category: FOOD.CATEGORY.BANH_TRANG,
       },
       {
-        _id: "68a116d46e8afff738598aab",
-        name: "Đậu phộng gói",
+        _id: FOOD.DAU_PHONG_GOI._id,
+        name: FOOD.DAU_PHONG_GOI.name,
         quantity: 1,
-        price: "15000",
-        unit: "cái",
+        price: FOOD.DAU_PHONG_GOI.price,
+        unit: FOOD.DAU_PHONG_GOI.unit,
         return: 0,
         category: FOOD.CATEGORY.BANH_TRANG,
-      }
-    );
-  }
+      },
+    ],
+    []
+  );
 
+  const [order, setOrder] = useState<Order>();
   const [items, setItems] = useState<Food[]>(defaultItems);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
   const confirm = useConfirm();
-  const [disableItemOrderAfterConfirm, setDisableItemOrderAfterConfirm] =
-    useState(false);
+  const [foods, setFoods] = useState<Food[]>([]);
+
+  const fetchOrder = async () => {
+    if (table.order?._id) {
+      const res = await FoodService.GetOrder(table.order._id);
+      if (res) {
+        setItems(res.foods);
+        setOrder(res);
+      }
+    }
+    setIsLoading(false);
+  };
+  useEffect(() => {
+    const fetchFood = async () => {
+      try {
+        const response = await FoodService.List("", {});
+        setFoods([...response]);
+      } catch (error) {}
+    };
+    fetchFood();
+    fetchOrder();
+    socket.on(SOCKET_GATEWAY.KEY.UPDATE_TABLE, () => {
+      fetchOrder();
+    });
+
+    return () => {
+      socket.off(SOCKET_GATEWAY.KEY.UPDATE_TABLE);
+    };
+  }, []);
 
   const handleChange = (index: number, field: string, value: any) => {
     const updated: any[] = [...items];
@@ -154,7 +178,6 @@ export default function OrderForm({
             );
             toast.success("Đã order thêm món thành công!");
             setItems((prev) => prev.filter((item) => item.name)); // lọc item rác
-            setDisableItemOrderAfterConfirm(true);
             onClose({ closeModal: false });
           } else {
             throw Error();
@@ -271,6 +294,15 @@ export default function OrderForm({
     }
   };
 
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center bg-white px-4">
+        <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center z-20">
+          <Loading />
+        </div>
+      </div>
+    );
+
   return (
     <div className="flex flex-col h-[70vh]">
       <div className="flex-1 overflow-y-auto space-y-4 pr-1">
@@ -294,8 +326,7 @@ export default function OrderForm({
                   isDisabled={
                     checkout ||
                     watchOrder ||
-                    order?.foods?.some((f) => f._id === item._id) ||
-                    disableItemOrderAfterConfirm
+                    order?.foods?.some((f) => f._id === item._id)
                   }
                   placeholder="Chọn món ăn"
                   isSearchable
